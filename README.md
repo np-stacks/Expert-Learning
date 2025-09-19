@@ -3,7 +3,7 @@
 
 Expert Learning is a **free** and **easy to use** study website. We enable users to create tools from files or texts by utilizing the Google Gemini API. This website is not limited to just students; educators, developers, and others can also make use of it.
 
-![Version](https://img.shields.io/badge/version-1.0.1-red) ![Language](https://img.shields.io/badge/language-TypeScript-blue)
+![Version](https://img.shields.io/badge/version-1.0.1-red) ![Language](https://img.shields.io/badge/language-TypeScript-blue) ![License](https://img.shields.io/badge/license-CC_BY--NB--NC-green) 
 
 **Visit Expert Learning at** https://expertlearning.app
 
