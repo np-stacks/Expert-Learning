@@ -182,7 +182,16 @@ export const handler: Handler = async (event: HandlerEvent, context: HandlerCont
         this.user = undefined;
         if (callback) callback();
       },
-      files: undefined
+      files: undefined,
+      params: {},
+      route: { path: apiPath },
+      baseUrl: '',
+      hostname: req.headers['host'] || 'localhost',
+      protocol: req.headers['x-forwarded-proto'] || 'https',
+      secure: true,
+      xhr: false,
+      fresh: false,
+      stale: true
     } as any;
 
     // Parse body if it's JSON
@@ -190,10 +199,16 @@ export const handler: Handler = async (event: HandlerEvent, context: HandlerCont
       try {
         if (req.headers['content-type']?.includes('application/json')) {
           req.body = JSON.parse(req.body);
+        } else if (req.headers['content-type']?.includes('application/x-www-form-urlencoded')) {
+          // Handle form data
+          req.body = new URLSearchParams(req.body);
         }
       } catch (e) {
+        console.error('Body parsing error:', e);
         // Keep as string if parsing fails
       }
+    } else if (!req.body) {
+      req.body = {};
     }
 
     let responseFinished = false;
@@ -333,35 +348,25 @@ export const handler: Handler = async (event: HandlerEvent, context: HandlerCont
       }, 5000); // Give Express 5 seconds to handle the route
 
       // Handle the request with Express app
-      app(req, res, (err?: any) => {
+      try {
+        app(req, res);
+      } catch (expressError) {
         clearTimeout(timeout);
         clearTimeout(responseTimeout);
         if (!responseFinished) {
           responseFinished = true;
-          if (err) {
-            console.error('Express error for', apiPath, ':', err);
-            resolve({
-              statusCode: 500,
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ 
-                message: 'Internal server error',
-                path: apiPath 
-              }),
-            });
-          } else {
-            // 404 handler
-            console.log('Express 404 for:', apiPath);
-            resolve({
-              statusCode: 404,
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ 
-                message: 'API route not found',
-                path: apiPath 
-              }),
-            });
-          }
+          console.error('Express invocation error for', apiPath, ':', expressError);
+          resolve({
+            statusCode: 500,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+              message: 'Express invocation failed',
+              error: expressError instanceof Error ? expressError.message : 'Unknown error',
+              path: apiPath 
+            }),
+          });
         }
-      });
+      }
     } catch (error) {
       console.error('Handler error for', apiPath, ':', error);
       if (!responseFinished) {
@@ -378,4 +383,3 @@ export const handler: Handler = async (event: HandlerEvent, context: HandlerCont
     }
   });
 };
-
