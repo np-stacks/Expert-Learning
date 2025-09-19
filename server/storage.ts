@@ -4,6 +4,7 @@ import { eq, desc, asc, gte, lte, and, isNotNull } from "drizzle-orm";
 export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
+  verifyUserPassword(username: string, password: string): Promise<User | null>;
   createUser(user: InsertUser): Promise<User>;
   createGenerationRequest(request: InsertGenerationRequest & { generatedHtml: string, userId?: string, category?: string, toolName?: string }): Promise<GenerationRequest>;
   getGenerationRequest(id: string): Promise<GenerationRequest | undefined>;
@@ -46,6 +47,15 @@ export class MemoryStorage implements IStorage {
 
   async getUserByUsername(username: string): Promise<User | undefined> {
     return this.usersByUsername.get(username);
+  }
+
+  async verifyUserPassword(username: string, password: string): Promise<User | null> {
+    const user = this.usersByUsername.get(username);
+    if (!user || user.password === "google-oauth") return null;
+    
+    // In memory storage, passwords are stored as plain text for simplicity
+    // This is only used in development/testing
+    return user.password === password ? user : null;
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
@@ -200,7 +210,23 @@ export class DatabaseStorage implements IStorage {
     return user || undefined;
   }
 
+  async verifyUserPassword(username: string, password: string): Promise<User | null> {
+    const user = await this.getUserByUsername(username);
+    if (!user || user.password === "google-oauth") return null;
+    
+    // For database storage, use bcrypt for password verification
+    const bcrypt = require("bcrypt");
+    const isValid = await bcrypt.compare(password, user.password);
+    return isValid ? user : null;
+  }
+
   async createUser(insertUser: InsertUser): Promise<User> {
+    // For database storage, hash passwords with bcrypt
+    if (insertUser.password !== "google-oauth") {
+      const bcrypt = require("bcrypt");
+      const saltRounds = 12;
+      insertUser.password = await bcrypt.hash(insertUser.password, saltRounds);
+    }
     const [user] = await this.db
       .insert(users)
       .values(insertUser)
