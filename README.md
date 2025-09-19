@@ -3,7 +3,7 @@
 
 Expert Learning is a **free** and **easy to use** study website. We enable users to create tools from files or texts by utilizing the Google Gemini API. This website is not limited to just students; educators, developers, and others can also make use of it.
 
-![Version](https://img.shields.io/badge/version-1.0.0-red) ![Language](https://img.shields.io/badge/language-TypeScript-blue)
+![Version](https://img.shields.io/badge/version-1.0.1-red) ![Language](https://img.shields.io/badge/language-TypeScript-blue)
 
 **Visit Expert Learning at** https://expertlearning.app
 
@@ -19,16 +19,20 @@ Expert Learning is a **free** and **easy to use** study website. We enable users
 - **Organize tools with custom tool types, categories, and names**<br />Personalize tools even further with custom tool types, categories, and names. These will save to your acount.
 
 # 🧭 Project Specs
-- **React with TypeScript** for interactable and powerful interfaces.
+- **React Vite with TypeScript** for interactable and powerful interfaces.
 - **Google Gemini API** for the perfect AI tools.
 - **Postgres DB** for an awesome and secure user storage.
 - **Name.org** for an unique domain.
-- **GitHub** for the best hosting and a loving community.
+- **GitHub** to share code and for a loving community.
 
 # 🍴 Contributing
 - Found a **bug**? Report it in [issues](https://github.com/np-stacks/Expert-Learning/issues)!
-- Feel free to fork this project!
-  - Make sure to read the [LICENSE](https://github.com/ExpertLearning/expertlearning.github.io/tree/main?tab=License-1-ov-file)!
-  - Download the latest [package](https://github.com/orgs/ExpertLearning/packages?repo_name=expertlearning.github.io), or clone the repository.
-  - Find a code editor (Ex: Replit)
-  - Code! *This project contains many process secrets. Make sure to set your project secrets*
+- **[LICENSE](https://github.com/np-stacks/Expert-Learning?tab=License-1-ov-file)**
+  - ✅ View Source
+  - ✅ Download Source
+  - ✅ Modify Source
+    - ✅ Personal Usage
+    - ❌ Public Distribution
+      - `Ex`: Hosting, Sharing
+  - ❌ Distribute Copies
+  - ❌ Commercialize Copies
