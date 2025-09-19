@@ -5,7 +5,7 @@
   "license": "MIT",
   "scripts": {
     "dev": "NODE_ENV=development tsx server/index.ts",
-    "build": "npm ci --include=dev && vite build && npm run build:functions",
+    "build": "npm install && vite build && npm run build:functions",
     "build:functions": "esbuild netlify/functions/api.ts --platform=node --bundle --format=cjs --outfile=.netlify/functions/api.js --external:@google/genai --external:drizzle-orm --external:@neondatabase/serverless",
     "start": "NODE_ENV=production node dist/index.js",
     "check": "tsc",
