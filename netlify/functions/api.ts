@@ -214,7 +214,7 @@ export const handler: Handler = async (event: HandlerEvent, context: HandlerCont
         return this;
       },
       clearCookie: function(name: string, options: any = {}) {
-        const cookieString = `${name}=; Path=${options.path || '/'}; Expires=Thu, 01 Jan 1970 00:00:00 GMT`;
+        let cookieString = `${name}=; Path=${options.path || '/'}; Expires=Thu, 01 Jan 1970 00:00:00 GMT`;
         if (options.httpOnly) cookieString += '; HttpOnly';
         if (options.secure) cookieString += '; Secure';
         if (options.sameSite) cookieString += `; SameSite=${options.sameSite}`;
