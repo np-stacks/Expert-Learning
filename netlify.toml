@@ -1,10 +1,11 @@
 [build]
   command = "npm run build"
   publish = "dist"
+  functions = "server"
 
 [functions]
-  directory = "server"
   node_bundler = "esbuild"
+  included_files = ["server/db.ts", "server/index.ts", "server/routes.ts", "server/storage.ts", "server/types.ts"]
   external_node_modules = ["@replit/vite-plugin-cartographer", "pg-native", "@babel/preset-typescript", "lightningcss"]
 
 [build.environment]
