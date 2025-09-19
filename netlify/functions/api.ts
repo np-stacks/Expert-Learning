@@ -7,6 +7,38 @@ import passport from "passport";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import { registerRoutes } from "../../server/routes";
 import { storage } from "../../server/storage";
+import crypto from "crypto";
+
+// Serverless-compatible password hashing using crypto
+function hashPassword(password: string): string {
+  const salt = crypto.randomBytes(16).toString('hex');
+  const hash = crypto.scryptSync(password, salt, 64).toString('hex');
+  return `${salt}:${hash}`;
+}
+
+function verifyPassword(password: string, hashedPassword: string): boolean {
+  const [salt, hash] = hashedPassword.split(':');
+  const verifyHash = crypto.scryptSync(password, salt, 64).toString('hex');
+  return hash === verifyHash;
+}
+
+// Override storage methods for Netlify compatibility
+const netlifyStorage = {
+  ...storage,
+  createUser: async (userData: any) => {
+    if (userData.password && userData.password !== "google-oauth") {
+      userData.password = hashPassword(userData.password);
+    }
+    return storage.createUser(userData);
+  },
+  verifyPassword: async (username: string, password: string) => {
+    const user = await storage.getUserByUsername(username);
+    if (!user || user.password === "google-oauth") return null;
+    
+    const isValid = verifyPassword(password, user.password);
+    return isValid ? user : null;
+  }
+};
 
 // Create a singleton Express app to maintain session state
 let app: express.Application | null = null;
@@ -60,12 +92,12 @@ function getApp() {
         : "/api/auth/google/callback"
     }, async (accessToken, refreshToken, profile, done) => {
       try {
-        const existingUser = await storage.getUserByUsername(profile.id);
+        const existingUser = await netlifyStorage.getUserByUsername(profile.id);
         if (existingUser) {
           return done(null, existingUser);
         }
         
-        const newUser = await storage.createUser({
+        const newUser = await netlifyStorage.createUser({
           username: profile.id,
           password: "google-oauth"
         });
@@ -82,7 +114,7 @@ function getApp() {
 
     passport.deserializeUser(async (id: string, done) => {
       try {
-        const user = await storage.getUser(id);
+        const user = await netlifyStorage.getUser(id);
         done(null, user);
       } catch (error) {
         done(error, null);
@@ -124,8 +156,15 @@ function getApp() {
     next();
   });
 
+  // Override global storage for Netlify compatibility
+  const originalStorage = (global as any).storage;
+  (global as any).storage = netlifyStorage;
+  
   // Register API routes
   registerRoutes(app);
+  
+  // Restore original storage
+  (global as any).storage = originalStorage;
   
   return app;
 }
