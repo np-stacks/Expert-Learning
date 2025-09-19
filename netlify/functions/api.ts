@@ -282,11 +282,16 @@ export const handler: Handler = async (event: HandlerEvent, context: HandlerCont
       end: function(data?: any) {
         if (responseFinished) return this;
         responseFinished = true;
-        if (data) this.body = data;
+        if (data !== undefined) {
+          this.body = typeof data === 'string' ? data : JSON.stringify(data);
+          if (typeof data === 'object' && !this.headers['Content-Type']) {
+            this.headers['Content-Type'] = 'application/json';
+          }
+        }
         resolve({
           statusCode: this.statusCode,
           headers: this.headers,
-          body: this.body,
+          body: this.body || '',
         });
         return this;
       },
@@ -304,43 +309,70 @@ export const handler: Handler = async (event: HandlerEvent, context: HandlerCont
       const timeout = setTimeout(() => {
         if (!responseFinished) {
           responseFinished = true;
+          console.error('Request timeout for:', apiPath);
           resolve({
             statusCode: 504,
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ message: 'Request timeout' }),
           });
         }
-      }, 25000); // 25 second timeout
+      }, 29000); // 29 second timeout (just under Netlify's 30s limit)
+
+      // Ensure response is sent even if Express doesn't handle the route
+      const responseTimeout = setTimeout(() => {
+        if (!responseFinished) {
+          responseFinished = true;
+          clearTimeout(timeout);
+          console.log('Route not handled by Express, sending 404 for:', apiPath);
+          resolve({
+            statusCode: 404,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message: 'API route not found' }),
+          });
+        }
+      }, 5000); // Give Express 5 seconds to handle the route
 
       // Handle the request with Express app
       app(req, res, (err?: any) => {
         clearTimeout(timeout);
+        clearTimeout(responseTimeout);
         if (!responseFinished) {
           responseFinished = true;
           if (err) {
-            console.error('Express error:', err);
+            console.error('Express error for', apiPath, ':', err);
             resolve({
               statusCode: 500,
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ message: 'Internal server error' }),
+              body: JSON.stringify({ 
+                message: 'Internal server error',
+                path: apiPath 
+              }),
             });
           } else {
             // 404 handler
+            console.log('Express 404 for:', apiPath);
             resolve({
               statusCode: 404,
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ message: 'Not found' }),
+              body: JSON.stringify({ 
+                message: 'API route not found',
+                path: apiPath 
+              }),
             });
           }
         }
       });
     } catch (error) {
-      console.error('Handler error:', error);
+      console.error('Handler error for', apiPath, ':', error);
       if (!responseFinished) {
         resolve({
           statusCode: 500,
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ message: 'Internal server error' }),
+          body: JSON.stringify({ 
+            message: 'Internal server error',
+            error: error instanceof Error ? error.message : 'Unknown error',
+            path: apiPath 
+          }),
         });
       }
     }
