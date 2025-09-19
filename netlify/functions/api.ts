@@ -18,6 +18,14 @@ function getApp() {
 
   app = express();
   
+  // Security headers
+  app.use((req, res, next) => {
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('X-Frame-Options', 'DENY');
+    res.setHeader('X-XSS-Protection', '1; mode=block');
+    next();
+  });
+  
   // Configure middleware
   app.use(express.json({ limit: '10mb' }));
   app.use(express.urlencoded({ extended: false, limit: '10mb' }));
@@ -85,6 +93,37 @@ function getApp() {
     app.use(passport.session());
   }
 
+  // Logging middleware (simplified for Netlify)
+  app.use((req, res, next) => {
+    const start = Date.now();
+    const path = req.path;
+    let capturedJsonResponse: Record<string, any> | undefined = undefined;
+
+    const originalResJson = res.json;
+    res.json = function (bodyJson, ...args) {
+      capturedJsonResponse = bodyJson;
+      return originalResJson.apply(res, [bodyJson, ...args]);
+    };
+
+    res.on("finish", () => {
+      const duration = Date.now() - start;
+      if (path.startsWith("/api") && path !== "/api/cooldown") {
+        let logLine = `${req.method} ${path} ${res.statusCode} in ${duration}ms`;
+        if (capturedJsonResponse) {
+          logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
+        }
+
+        if (logLine.length > 80) {
+          logLine = logLine.slice(0, 79) + "…";
+        }
+
+        console.log(logLine);
+      }
+    });
+
+    next();
+  });
+
   // Register API routes
   registerRoutes(app);
   
@@ -124,6 +163,7 @@ export const handler: Handler = async (event: HandlerEvent, context: HandlerCont
       connection: { 
         remoteAddress: event.headers['x-forwarded-for'] || '127.0.0.1' 
       },
+      originalUrl: apiPath,
       get: function(header: string) {
         return this.headers[header.toLowerCase()];
       },
@@ -141,7 +181,8 @@ export const handler: Handler = async (event: HandlerEvent, context: HandlerCont
       logout: function(callback: any) {
         this.user = undefined;
         if (callback) callback();
-      }
+      },
+      files: undefined
     } as any;
 
     // Parse body if it's JSON
@@ -247,6 +288,13 @@ export const handler: Handler = async (event: HandlerEvent, context: HandlerCont
           headers: this.headers,
           body: this.body,
         });
+        return this;
+      },
+      on: function(event: string, callback: Function) {
+        if (event === 'finish') {
+          // Simulate the finish event for logging middleware
+          setTimeout(() => callback(), 0);
+        }
         return this;
       }
     } as any;
