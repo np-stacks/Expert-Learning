@@ -12,6 +12,13 @@ import express from 'express';
 import multer from 'multer';
 import fs from 'fs';
 
+// Assuming activeStorage is defined and imported elsewhere,
+// or this import is missing and needs to be added.
+// For the purpose of this edit, we will assume it's available.
+// If 'activeStorage' is not defined, this code will not run as is.
+// Example placeholder if needed:
+// import { activeStorage } from "./activeStorage"; // Uncomment and adjust if needed
+
 function requireAuth(req: any, res: any, next: any) {
   if (req.session.userId) {
     next();
@@ -106,10 +113,10 @@ const upload = multer({
   fileFilter: (req, file, cb) => {
     const allowedTypes = [
       'application/pdf',
-      'image/jpeg', 
+      'image/jpeg',
       'image/jpg',
-      'image/png', 
-      'image/gif', 
+      'image/png',
+      'image/gif',
       'text/plain',
       'application/msword', // .doc
       'application/vnd.openxmlformats-officedocument.wordprocessingml.document', // .docx
@@ -533,7 +540,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 content: content,
                 fileName: file.originalname
               });
-            } else if (file.mimetype === 'application/msword' || 
+            } else if (file.mimetype === 'application/msword' ||
                        file.mimetype === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
                        file.mimetype === 'application/vnd.ms-powerpoint' ||
                        file.mimetype === 'application/vnd.openxmlformats-officedocument.presentationml.presentation' ||
@@ -731,7 +738,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Check if user already has a custom tool type with this name
       const existingTypes = await storage.getUserCustomToolTypes(req.session.userId);
       const nameExists = existingTypes.some(type => type.name.toLowerCase() === validatedData.name.toLowerCase());
-      
+
       if (nameExists) {
         return res.status(409).json({
           message: "You already have a custom tool type with this name",
@@ -750,7 +757,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error) {
       console.error("Create custom tool type error:", error);
-      
+
       if (error instanceof Error && error.name === 'ZodError') {
         return res.status(400).json({
           message: "Invalid custom tool type data",
@@ -772,7 +779,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Check if user already has another custom tool type with this name
       const existingTypes = await storage.getUserCustomToolTypes(req.session.userId);
       const nameExists = existingTypes.some(type => type.id !== id && type.name.toLowerCase() === validatedData.name.toLowerCase());
-      
+
       if (nameExists) {
         return res.status(409).json({
           message: "You already have a custom tool type with this name",
@@ -796,7 +803,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error) {
       console.error("Update custom tool type error:", error);
-      
+
       if (error instanceof Error && error.name === 'ZodError') {
         return res.status(400).json({
           message: "Invalid custom tool type data",
@@ -812,7 +819,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.delete("/api/custom-tool-types/:id", requireAuth, async (req: any, res: any) => {
     try {
       const { id } = req.params;
-      
+
       const deleted = await storage.deleteCustomToolType(id, req.session.userId);
 
       if (!deleted) {
@@ -857,7 +864,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Check if user already has a custom category with this name
       const existingCategories = await storage.getUserCustomCategories(req.session.userId);
       const nameExists = existingCategories.some(category => category.name.toLowerCase() === validatedData.name.toLowerCase());
-      
+
       if (nameExists) {
         return res.status(409).json({
           message: "You already have a custom category with this name",
@@ -876,7 +883,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error) {
       console.error("Create custom category error:", error);
-      
+
       if (error instanceof Error && error.name === 'ZodError') {
         return res.status(400).json({
           message: "Invalid custom category data",
@@ -898,7 +905,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Check if user already has another custom category with this name
       const existingCategories = await storage.getUserCustomCategories(req.session.userId);
       const nameExists = existingCategories.some(category => category.id !== id && category.name.toLowerCase() === validatedData.name.toLowerCase());
-      
+
       if (nameExists) {
         return res.status(409).json({
           message: "You already have a custom category with this name",
@@ -922,7 +929,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error) {
       console.error("Update custom category error:", error);
-      
+
       if (error instanceof Error && error.name === 'ZodError') {
         return res.status(400).json({
           message: "Invalid custom category data",
@@ -938,7 +945,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.delete("/api/custom-categories/:id", requireAuth, async (req: any, res: any) => {
     try {
       const { id } = req.params;
-      
+
       const deleted = await storage.deleteCustomCategory(id, req.session.userId);
 
       if (!deleted) {
