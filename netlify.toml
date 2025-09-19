@@ -5,4 +5,9 @@
 
 [functions]
   node_bundler = "esbuild"
-  external_node_modules = ["@replit/vite-plugin-cartographer", "pg-native", "@babel/preset-typescript"]
+
+  [functions.node_bundler_esm]
+    external_node_modules = ["@replit/vite-plugin-cartographer", "pg-native", "@babel/preset-typescript"]
+
+[context.production]
+  functions.external_node_modules = ["@replit/vite-plugin-cartographer", "pg-native", "@babel/preset-typescript"]
