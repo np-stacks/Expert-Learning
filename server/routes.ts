@@ -5,7 +5,7 @@ import { storage } from "./storage";
 import { generateEducationalTool } from "./services/gemini";
 import { generateToolSchema, loginSchema, registerSchema } from "@shared/schema";
 import { ZodError } from "zod";
-import bcrypt from "bcrypt";
+// bcrypt removed for Netlify compatibility - using crypto-based hashing in storage
 import "./types";
 import * as geminiService from "./services/gemini";
 import express from 'express';
@@ -159,7 +159,7 @@ async function analyzeImageWithGemini(buffer: Buffer, mimeType: string): Promise
   }
 }
 
-export async function registerRoutes(app: Express): Promise<Server> {
+export async function registerRoutes(app: Express, activeStorage = storage): Promise<Server> {
 
   // Enhance prompt (authenticated users only)
   app.post("/api/enhance-prompt", requireAuth, async (req: any, res: any) => {
@@ -279,7 +279,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       const validatedData = registerSchema.parse(req.body);
 
-      const existingUser = await storage.getUserByUsername(validatedData.username);
+      const existingUser = await activeStorage.getUserByUsername(validatedData.username);
       if (existingUser) {
         updateAuthRateLimit(clientIP, false);
         return res.status(409).json({
@@ -287,12 +287,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      const saltRounds = 12;
-      const hashedPassword = await bcrypt.hash(validatedData.password, saltRounds);
-
-      const user = await storage.createUser({
+      const user = await activeStorage.createUser({
         username: validatedData.username,
-        password: hashedPassword,
+        password: validatedData.password,
       });
 
       req.session.regenerate((err) => {
@@ -348,16 +345,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const validatedData = loginSchema.parse(req.body);
 
-      const user = await storage.getUserByUsername(validatedData.username);
+      // Use storage's built-in password verification
+      const user = await activeStorage.verifyUserPassword(validatedData.username, validatedData.password);
       if (!user) {
-        updateAuthRateLimit(clientIP, false);
-        return res.status(401).json({
-          message: "Invalid username or password",
-        });
-      }
-
-      const isPasswordValid = await bcrypt.compare(validatedData.password, user.password);
-      if (!isPasswordValid) {
         updateAuthRateLimit(clientIP, false);
         return res.status(401).json({
           message: "Invalid username or password",
