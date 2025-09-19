@@ -31,7 +31,7 @@ const netlifyStorage = {
     }
     return storage.createUser(userData);
   },
-  verifyPassword: async (username: string, password: string) => {
+  verifyUserPassword: async (username: string, password: string) => {
     const user = await storage.getUserByUsername(username);
     if (!user || user.password === "google-oauth") return null;
     
@@ -156,15 +156,8 @@ function getApp() {
     next();
   });
 
-  // Override global storage for Netlify compatibility
-  const originalStorage = (global as any).storage;
-  (global as any).storage = netlifyStorage;
-  
-  // Register API routes
-  registerRoutes(app);
-  
-  // Restore original storage
-  (global as any).storage = originalStorage;
+  // Register API routes with Netlify-compatible storage
+  registerRoutes(app, netlifyStorage);
   
   return app;
 }
