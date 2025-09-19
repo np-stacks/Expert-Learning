@@ -40,7 +40,7 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
   passport.use(new GoogleStrategy({
     clientID: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    callbackURL: "/api/auth/google/callback"
+    callbackURL: process.env.NODE_ENV === 'production' ? "/.netlify/functions/api/auth/google/callback" : "/api/auth/google/callback"
   }, async (accessToken, refreshToken, profile, done) => {
     try {
       const existingUser = await storage.getUserByUsername(profile.id);
@@ -85,12 +85,18 @@ export const handler: Handler = async (event: HandlerEvent, context: HandlerCont
   process.env.NETLIFY_DEPLOYMENT = '1';
   
   return new Promise((resolve, reject) => {
+    // Extract the API path from the Netlify function path
+    const apiPath = event.path.replace(/^\/\.netlify\/functions\/api/, '') || '/';
+    
     const req = {
       method: event.httpMethod,
-      url: event.path,
+      url: apiPath,
       headers: event.headers,
       body: event.body,
       query: event.queryStringParameters,
+      ip: event.headers['x-forwarded-for'] || event.headers['client-ip'] || '127.0.0.1',
+      connection: { remoteAddress: event.headers['x-forwarded-for'] || '127.0.0.1' },
+      session: {},
     } as any;
 
     const res = {
@@ -104,14 +110,38 @@ export const handler: Handler = async (event: HandlerEvent, context: HandlerCont
       json: function(data: any) {
         this.headers['Content-Type'] = 'application/json';
         this.body = JSON.stringify(data);
+        resolve({
+          statusCode: this.statusCode,
+          headers: this.headers,
+          body: this.body,
+        });
         return this;
       },
       send: function(data: any) {
         this.body = data;
+        resolve({
+          statusCode: this.statusCode,
+          headers: this.headers,
+          body: this.body,
+        });
         return this;
       },
       setHeader: function(name: string, value: string) {
         this.headers[name] = value;
+        return this;
+      },
+      redirect: function(url: string) {
+        this.statusCode = 302;
+        this.headers['Location'] = url;
+        resolve({
+          statusCode: this.statusCode,
+          headers: this.headers,
+          body: '',
+        });
+        return this;
+      },
+      clearCookie: function(name: string, options: any) {
+        this.headers['Set-Cookie'] = `${name}=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT`;
         return this;
       },
       end: function(data?: any) {
@@ -125,9 +155,18 @@ export const handler: Handler = async (event: HandlerEvent, context: HandlerCont
     } as any;
 
     try {
-      app(req, res);
+      // Handle the request with Express app
+      app(req, res, () => {
+        // Default 404 handler
+        res.status(404).json({ message: 'Not found' });
+      });
     } catch (error) {
-      reject(error);
+      console.error('Handler error:', error);
+      resolve({
+        statusCode: 500,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: 'Internal server error' }),
+      });
     }
   });
 };
