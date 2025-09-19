@@ -1,0 +1,12 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+  functions = "server"
+
+[functions]
+  node_bundler_esm = true
+  node_bundler = "esbuild"
+  node_bundler_config = { external = ["@replit/vite-plugin-cartographer", "pg-native", "@babel/preset-typescript"] }
+
+[context.production]
+  functions.external_node_modules = ["@replit/vite-plugin-cartographer", "pg-native", "@babel/preset-typescript"]
