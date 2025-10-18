@@ -15,26 +15,7 @@ const genAI = new GoogleGenAI({
 });
 
 export async function enhancePrompt(originalPrompt: string, category?: string): Promise<string> {
-  const enhancePromptText = `
-You are an educational tool prompt enhancer. Your job is to take a basic prompt and enhance it to create better, more detailed educational tools.
-
-Take this prompt: "${originalPrompt}"
-${category && category !== 'none' ? `Category/Subject: ${category}` : ''}
-
-Note: The prompt if from the App User. If the prompt doesn't make sense, or is too vague, you can make a reasonable assumption about what the user wants.
-
-Enhance it by:
-1. Adding specific learning objectives
-2. Suggesting appropriate difficulty levels
-3. Including interactive elements
-4. Making it more engaging and educational
-5. Adding context or real-world applications
-6. Specifying the target audience if not clear
-7. Making prompt more clear and concise
-8. Make it less than 500 characters long
-
-Return ONLY the enhanced prompt, nothing else. Keep it concise but much more detailed and educational than the original.
-`;
+  const enhancePromptText = `(REDACTED FOR PRIVACY)`;
 
   try {
     const response = await generateWithRetry(enhancePromptText, "", 2, 500);
@@ -131,59 +112,22 @@ export async function generateEducationalTool(
     let toolTypeInstruction = "";
     if (toolType && toolType !== "auto") {
       const toolTypeMap: Record<string, string> = {
-        quiz: "Create an interactive quiz with multiple choice questions, immediate feedback, and a score counter.",
-        flashcards:
-          "Create interactive digital flashcards that users can flip through with click/tap interactions.",
-        chart:
-          "Create an interactive chart or graph with detailed data visualization.",
-        worksheet:
-          "Create an interactive worksheet with fillable fields and exercises.",
-        timeline:
-          "Create an interactive timeline with detailed clickable events and detailed information.",
-        game: "Create an educational game with interactive elements and scoring.",
-        lecture:
-          "Create a interactive slideshow relating to the subject. Allow the user to move between slides, and include detailed information in each slide.",
-        diagram:
-          "Create an interactive diagram or infographic with detailed and clickable elements.",
-        custom:
-          "Create a highly customized, advanced educational tool with unique interactive features tailored specifically to the user's request. Use creative and innovative approaches that go beyond standard tool types.",
+        REDACTED: "FOR PRIVACY"
       };
 
       // If it's a predefined tool type, use the mapped instruction
       if (toolTypeMap[toolType]) {
-        toolTypeInstruction = `Specifically create: ${toolTypeMap[toolType]}`;
+        toolTypeInstruction = `(REDACTED FOR PRIVACY)`;
       } else {
         // Handle custom tool type names
-        toolTypeInstruction = `Specifically create: ${toolType}. Create a highly customized, advanced educational tool with unique interactive features tailored specifically to this tool type and the user's request. Use creative and innovative approaches.`;
+        toolTypeInstruction = `(REDACTED FOR PRIVACY)`;
       }
     } else {
       toolTypeInstruction =
         "Choose the most appropriate tool type for this request and create it.";
     }
 
-    const systemPrompt = `You are an expert educational app creator. Generate complete, interactive HTML content for educational/study tools.
-
-IMPORTANT REQUIREMENTS:
-1. Generate ONLY valid HTML content that can be embedded in an iframe
-2. Include all necessary CSS styles inline within <style> tags
-3. Include all necessary JavaScript within <script> tags
-4. Make the content fully self-contained and interactive
-5. Use modern, responsive design with good UX
-6. Ensure accessibility with proper ARIA labels and semantic HTML
-7. Use vibrant colors and engaging visual elements
-8. Make sure all functionality works without external dependencies
-9. Create modern and appealing UI
-10. Make sure the app is COMPLETE. DO NOT ADD ANY "PLACEHOLDERS"
-11. The result will be used for commercial use.
-12. Do your best, we want quality.
-13. Try your best to fill in stuff such as APIs.
-14. There should be no placeholders.
-
-The user wants: ${prompt}
-${toolTypeInstruction}
-${category && category !== 'none' ? `Category/Subject: ${category}` : ''}
-
-Generate complete HTML that will work immediately when loaded in an iframe.`;
+    const systemPrompt = `(REDACTED FOR PRIVACY)`;
 
     const generatedContent = await generateWithRetry(prompt, systemPrompt);
 
@@ -221,7 +165,7 @@ export async function analyzeImage(
           mimeType: mimeType,
         },
       },
-      `Analyze this image in detail and describe its key elements, context, subject matter, and any text visible in the image. Focus on educational content that could be used to create learning tools.`,
+      `(REDACTED FOR PRIVACY)`,
     ];
 
     const response = await ai.models.generateContent({
@@ -251,29 +195,15 @@ export async function generateEducationalToolWithFiles(
     let toolTypeInstruction = "";
     if (toolType && toolType !== "auto") {
       const toolTypeMap: Record<string, string> = {
-        quiz: "Create an interactive quiz with multiple choice questions, immediate feedback, and a score counter.",
-        flashcards:
-          "Create interactive digital flashcards that users can flip through with click/tap interactions.",
-        chart:
-          "Create an interactive chart or graph with detailed data visualization.",
-        worksheet:
-          "Create an interactive worksheet with fillable fields and exercises.",
-        timeline:
-          "Create an interactive timeline with detailed clickable events and detailed information.",
-        game: "Create an educational game with interactive elements and scoring.",
-        lecture:
-          "Create a interactive slideshow relating to the subject. Allow the user to move between slides, and include detailed information in each slide.",
-        diagram:
-          "Create an interactive diagram or infographic with detailed and clickable elements.",
-        custom:
-          "Create a highly customized, advanced educational tool with unique interactive features tailored specifically to the user's request. Use creative and innovative approaches that go beyond standard tool types.",
+        REDACTED:
+          "FOR PRIVACY",
       };
 
       if (toolTypeMap[toolType]) {
-        toolTypeInstruction = `Specifically create: ${toolTypeMap[toolType]}`;
+        toolTypeInstruction = `(REDACTED FOR PRIVACY)`;
       } else {
         // Handle custom tool type names
-        toolTypeInstruction = `Specifically create: ${toolType}. Create a highly customized, advanced educational tool with unique interactive features tailored specifically to this tool type and the user's request. Use creative and innovative approaches.`;
+        toolTypeInstruction = `(REDACTED FOR PRIVACY)`;
       }
     } else {
       toolTypeInstruction =
@@ -283,37 +213,15 @@ export async function generateEducationalToolWithFiles(
     let fileContext = "";
     if (fileContents && fileContents.length > 0) {
       fileContext =
-        "\n\nThe user has also provided the following files for context:\n";
+        "(REDACTED FOR PRIVACY)";
       fileContents.forEach((file, index) => {
         fileContext += `\nFile ${index + 1} (${file.fileName}):\n${file.content}\n`;
       });
       fileContext +=
-        "\nUse this file content to create more relevant and personalized educational tools. Incorporate the information from these files into the educational tool you create.";
+        "(REDACTED FOR PRIVACY)";
     }
 
-    const systemPrompt = `You are an expert educational app creator. Generate complete, interactive HTML content for educational/study tools.
-
-IMPORTANT REQUIREMENTS:
-1. Generate ONLY valid HTML content that can be embedded in an iframe
-2. Include all necessary CSS styles inline within <style> tags
-3. Include all necessary JavaScript within <script> tags
-4. Make the content fully self-contained and interactive
-5. Use modern, responsive design with good UX
-6. Ensure accessibility with proper ARIA labels and semantic HTML
-7. Use vibrant colors and engaging visual elements
-8. Make sure all functionality works without external dependencies
-9. Create modern and appealing UI
-10. Make sure the app is COMPLETE. DO NOT ADD ANY "PLACEHOLDERS"
-11. The result will be used for commercial use.
-12. Do your best, we want quality.
-13. Try your best to fill in stuff such as APIs.
-14. There should be no placeholders.
-
-The user wants: ${prompt}
-${toolTypeInstruction}
-${fileContext}
-
-Generate complete HTML that will work immediately when loaded in an iframe.`;
+    const systemPrompt = `(REDACTED FOR PRIVACY)`;
 
     const generatedContent = await generateWithRetry(
       prompt + fileContext,
