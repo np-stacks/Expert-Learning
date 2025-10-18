@@ -3,7 +3,7 @@
 
 Use the **power of AI to create educational tools**, such as study guides. Expert Learning is optimized for **easy access and usage**, and it's completely **free**.
 
-![Version](https://img.shields.io/badge/version-1.0.6-red) ![Dev Note](https://img.shields.io/badge/Tool%20Sharing%20%26%20Tool%20Settings-gray)
+![Version](https://img.shields.io/badge/version-1.0.6C-red) ![Dev Note](https://img.shields.io/badge/Tool%20Sharing%20%26%20Tool%20Settings-gray)
 <br />
 ![Language](https://img.shields.io/badge/language-TypeScript-blue) 
 
