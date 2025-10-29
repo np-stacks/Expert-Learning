@@ -25,8 +25,7 @@ Use the **power of AI to create educational tools**, such as study guides. Exper
 # 🧭 Project Specs
 - **React 18 with Typescript & Vite** for interactable and powerful interfaces.
 - **Radix UI and Tailwind CSS** for colorful designs.
-- **React Context APIs** for a easy API framework.
-- **Google Gemini API** for the perfect AI.
+- **Google Gemini API** and **HuggingFace API** for the perfect AI _(Gemini, CodeGeex, GodeGen, StarCoder)_.
 - **Cloudflare D1** for an awesome and secure database.
 - **Express** for superb APIs.
 - **Name.org** for an unique domain.
