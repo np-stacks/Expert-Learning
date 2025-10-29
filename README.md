@@ -28,6 +28,7 @@ Use the **power of AI to create educational tools**, such as study guides. Exper
 - **React Context APIs** for a easy API framework.
 - **Google Gemini API** for the perfect AI.
 - **Cloudflare D1** for an awesome and secure database.
+- **Express** for superb APIs.
 - **Name.org** for an unique domain.
 - **GitHub** for a loving community.
 
